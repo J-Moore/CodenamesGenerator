@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Board Creation</title>
+	<link rel="stylesheet" href="src/style.css">
+	<script src="src/script.js"></script>
+  </head>
+  <body>
+  
+  
+    <!-- 1. ENTER WORD LIST -->
+	<div>
+	  Enter words to generate board from.  Words can be separated by spaces, tabs, or new lines.
+	</div>
+	<div>
+	  <textarea cols=60 rows=10 id='wordlist'></textarea>
+	</div>
+	<!-- 2. ENTER PARAMETERS -->
+	<div>
+	  <input type=number value=2 min=2 max=4 id="num-teams" disabled=true />
+	  <label>Enter Number of Teams</label>
+	  <p>Select Team to go First:</p>
+	  <input type=radio name="team-select" id="team-red" value=0 checked=checked />
+	  <label>Red</label>
+	  <input type=radio name="team-select" id="team-blue" value=1 />
+	  <label>Blue</label>
+	</div>
+	
+	
+	<!-- 3. PRESS BUTTON TO GENERATE -->
+	<br>
+	<input type=button onclick=createTable() value='Generate Board' />
+	
+	<!-- 4. HOLDER FOR GENERATED BOARD -->
+	<br>
+	<br>
+	<br>
+	<div id='resultsDiv'></div>
+	
+	<!-- 5. COPYING OPTIONS -->
+	<br>
+	<div id='copy-options'></div>
+	
+  </body>
+</html>
