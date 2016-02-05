@@ -1,6 +1,6 @@
 var wordlist = new Array();
 var boardlist = new Array();
-var boardstring = "";
+var boardstring = "", boardstring_uncolored = "";
 
 // define board cell object (holds word and color parameters)
 var BoardCell = function(word, color) {
@@ -147,6 +147,7 @@ function displayBoard() {
 	
 	// forum code generation setup
 	boardstring = "[size=x-large][b][Table=30]";
+	boardstring_uncolored = "[size=x-large][b][Table=30]";
 	
 	var results_table = document.createElement('table');
 	results_table.style.border = "1px solid black";
@@ -158,6 +159,7 @@ function displayBoard() {
 	for (i = 0; i < num_rows; i++) {
 		var results_tr = document.createElement('tr');
 		boardstring += "[TR]";
+		boardstring_uncolored += "[TR]";
 		for (j = 0; j < num_cols; j++) {
 			board_list_idx = (i * 5) + j;
 			var results_td = document.createElement('td');
@@ -173,14 +175,17 @@ function displayBoard() {
 			boardstring += "[color=" + boardlist[board_list_idx].color + "]";
 			boardstring += boardlist[board_list_idx].word;
 			boardstring += "[/color][/TD]"
+			boardstring_uncolored += "[TD]" + boardlist[board_list_idx].word + "[/TD]";
 		}
 		results_tbody.appendChild(results_tr);
 		boardstring += "[/TR]";
+		boardstring_uncolored += "[/TR]";
 	}
 	results_table.appendChild(results_tbody);
 	resultsDiv.appendChild(results_table);
 	
 	boardstring += "[/Table][/b][/size]";
+	boardstring_uncolored += "[/Table][/b][/size]";
 }
 
 // generates string of text to use in myBB forum software
@@ -191,10 +196,26 @@ function displayCopyOptions() {
 	
 	// instructions for copying
 	var promptP = document.createElement('p');
-	var promptText = document.createTextNode('Copy this code for use in forums:');
-	
+	var promptText = document.createTextNode('Copy the following code for use in forum posts:');
 	promptP.appendChild(promptText);
 	copyDiv.appendChild(promptP);
+	
+	var whiteP = document.createElement('p');
+	var whiteText = document.createTextNode('1.  Uncolored grid for guessing:');
+	whiteP.appendChild(whiteText);
+	copyDiv.appendChild(whiteP);
+	
+	var copy_textarea_blank = document.createElement('textarea');
+	copy_textarea_blank.cols = "120";
+	copy_textarea_blank.rows = "4";
+	copy_textarea_blank.value = boardstring_uncolored;
+	
+	copyDiv.appendChild(copy_textarea_blank);
+	
+	var colorP = document.createElement('p');
+	var colorText = document.createTextNode('2.  Colored grid with answers:');
+	colorP.appendChild(colorText);
+	copyDiv.appendChild(colorP);
 	
 	// textbox that generates code
 	var copy_textarea = document.createElement('textarea');
