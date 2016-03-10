@@ -19,7 +19,9 @@ var forum_color_map = {
 // function called by clicking 'Create!'
 function createTable() {
 	var wordstring = document.getElementById('wordlist').value;
-	wordlist = wordstring.split(/\s/);
+	var idx, itr_string;
+	wordlist = wordstring.split("\n");
+	// TODO - check for empty lines
 	if (wordlist.length < 25) {
 		alert("Error - Table generation attempted on wordlist of less than 25 words");
 	} else {
