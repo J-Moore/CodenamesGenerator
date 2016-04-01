@@ -1,6 +1,8 @@
 var wordlist = new Array();
 var boardlist = new Array();
-var boardstring = "", boardstring_uncolored = "";
+var boardstring = "", boardstring_uncolored = "", downloadString = "";
+var passes = 1, round = 1, current_first_team;
+var initialDiv, currentRoundDiv;
 
 // define board cell object (holds word and color parameters)
 var BoardCell = function(word, color) {
@@ -18,15 +20,18 @@ var forum_color_map = {
 
 // function called by clicking 'Create!'
 function createTable() {
-	var wordstring = document.getElementById('wordlist').value;
+    var wordstring = document.getElementById('wordlist').value;
+    initialDiv = document.getElementById("resultsDiv");
 	var idx, itr_string;
 	wordlist = wordstring.split("\n");
 	// TODO - check for empty lines
 	if (wordlist.length < 25) {
 		alert("Error - Table generation attempted on wordlist of less than 25 words");
-	} else {
-		createBoard();
-	}
+	} else if (wordlist.length < 75 && document.getElementById('all-rounds').checked) {
+	    alert("Error - 3 Table generation attempted on wordlist of less than 75 words");
+    } else {
+	    createBoard();
+    }
 }
 
 // function for displaying error message to user
@@ -52,10 +57,47 @@ function giveError(errorMsg) {
 
 // generate randomized board
 function createBoard() {
-	pickWords(createColorMap());
+
+    clearResults();
+
+    if (document.getElementById('all-rounds').checked) {
+         passes = 3
+    }
+
+    selectInitialTeam();
+
+    for (var i = 0; i < passes; i++) {
+
+	    pickWords(createColorMap());
 	
-	displayBoard();
-	displayCopyOptions();
+	    currentRoundDiv = document.createElement("round" + round);
+	    initialDiv.appendChild(currentRoundDiv);
+
+	    var roundh1 = document.createElement('h1');
+	    var roundText = document.createTextNode('Grid for Round ' + round);
+	    roundh1.appendChild(roundText);
+	    currentRoundDiv.appendChild(roundh1);
+
+	    displayBoard();
+	    displayCopyOptions();
+
+	    current_first_team++; //switches starting color
+	    round++;
+    }
+    
+    createDownloadSelectionBox()
+
+}
+
+//function to determine which team is going first
+//moved out of createColorMap to facilitate 3-grid generation
+function selectInitialTeam() {
+    var radio_buttons = document.getElementsByName('team-select');
+    for (var i = 0; i < radio_buttons.length; i++) {
+        if (radio_buttons[i].checked) {
+            current_first_team = radio_buttons[i].value;
+        }
+    }
 }
 
 // function to randomly pick words from inputed listStyleType
@@ -79,23 +121,18 @@ function pickWords(color_map) {
 // function to set colors randomly for words
 function createColorMap() {
 	var color_bomb = "black";
-	var color_teams = ["red", "blue"];
+	var color_teams = ["red", "blue", "red", "blue"]; //sloppy hardcoding, but not necessary to abstract with two teams.
 	var current_color;
 	var color_map = [];
 	
-	// determine which team is going first
-	var radio_buttons = document.getElementsByName('team-select');
-	for (var i = 0; i < radio_buttons.length; i++) {
-		if (radio_buttons[i].checked) {
-			current_color = radio_buttons[i].value;
-		}
-	}
-	
+    // determine which team is going first
+	current_color = current_first_team;
+
 	// create color map with number of colors we want
 	var i;
 	
 	// 0-8: first team's color
-	for (i = 0; i < 9; i++) {
+	for (var i = 0; i < 9; i++) {
 		color_map[i] = forum_color_map[color_teams[current_color]];
 	}
 	
@@ -137,12 +174,9 @@ function shuffle(o){
 // function to create DOM elements to display board of picked words
 // also generates ForumCode as it loops
 function displayBoard() {
-	var resultsDiv = document.getElementById('resultsDiv');
-		
-	// clear results div
-	while (resultsDiv.firstChild) {
-		resultsDiv.removeChild(resultsDiv.firstChild);
-	}
+
+    var resultsDiv = document.createElement("resultsDiv" + round);
+
 	var num_rows = 5;
 	var num_cols = 5;
 	var board_list_idx = -1;
@@ -158,11 +192,11 @@ function displayBoard() {
 	results_tbody.style.fontSize = "32px";
 	results_tbody.style.fontWeight = "bold";
 	
-	for (i = 0; i < num_rows; i++) {
+	for (var i = 0; i < num_rows; i++) {
 		var results_tr = document.createElement('tr');
 		boardstring += "[TR]";
 		boardstring_uncolored += "[TR]";
-		for (j = 0; j < num_cols; j++) {
+		for (var j = 0; j < num_cols; j++) {
 			board_list_idx = (i * 5) + j;
 			var results_td = document.createElement('td');
 			var results_word = document.createTextNode(boardlist[board_list_idx].word);
@@ -185,16 +219,16 @@ function displayBoard() {
 	}
 	results_table.appendChild(results_tbody);
 	resultsDiv.appendChild(results_table);
-	
+	currentRoundDiv.appendChild(resultsDiv)
 	boardstring += "[/Table][/b][/size]";
 	boardstring_uncolored += "[/Table][/b][/size]";
+	addToDownload()
 }
 
 // generates string of text to use in myBB forum software
 function displayCopyOptions() {
 	
-	var copyDiv = document.getElementById('copy-options');
-	copyDiv.innerHTML = "";
+    var copyDiv = document.createElement('copy-options' + round);
 	
 	// instructions for copying
 	var promptP = document.createElement('p');
@@ -226,4 +260,42 @@ function displayCopyOptions() {
 	copy_textarea.value = boardstring;
 	
 	copyDiv.appendChild(copy_textarea);
+	currentRoundDiv.appendChild(copyDiv)
 }
+
+// Adds Boardstrings to download string
+function addToDownload() {
+    downloadString = downloadString + "Round " + round + "\n\n" + boardstring + "\n\n" + boardstring_uncolored + "\n\n"
+}
+
+// clears out all data with each button press
+function clearResults() {
+    round = 1;
+    downloadString = "";
+    if (initialDiv){
+        while (initialDiv.firstChild) {
+            initialDiv.removeChild(initialDiv.firstChild);
+        }
+    }
+}
+
+//function to create text box with all text for download
+function createDownloadSelectionBox() {
+    var downloadH1 = document.createElement('h1');
+    var downloadHtext = document.createTextNode('Output for all rounds');
+    downloadH1.appendChild(downloadHtext);
+    initialDiv.appendChild(downloadH1);
+
+    var downloadP = document.createElement('p');
+    var downloadText = document.createTextNode('Copy the following code and save to a text file.');
+    downloadP.appendChild(downloadText);
+    initialDiv.appendChild(downloadP);
+
+    var copy_textarea_all = document.createElement('textarea');
+    copy_textarea_all.cols = "120";
+    copy_textarea_all.rows = "4";
+    copy_textarea_all.value = downloadString;
+
+    initialDiv.appendChild(copy_textarea_all);
+}
+
